@@ -1,127 +1,110 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, MenuItem } from '@mui/material';
+import { TextField, Button } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchOwnerById, createOwner, updateOwner } from '../services/api'; // Import necessary API functions
+import { fetchRepairById, createRepair, updateRepair } from '../services/api';
 
-const OwnerForm = () => {
-  const { id } = useParams(); // Retrieve the owner ID from the URL
+const RepairForm = () => {
+  const { id } = useParams(); // Get the repair ID from the URL
   const navigate = useNavigate();
 
-  // State for owner fields
-  const [owner, setOwner] = useState({
-    id: null, // Initialize as null, explicitly handle it as a long if provided
-    vatNumber: '',
-    name: '',
-    surname: '',
-    address: '',
-    phoneNumber: '',
-    email: '',
-    password: '',
-    ownerType: '',
-    propertyItems: [], // Handle this separately if needed
+  // State to manage form data
+  const [repair, setRepair] = useState({
+    type: '',
+    description: '',
+    propertyItemId: '',
+    address: '', // Include Address field
   });
 
-  // Load owner data if editing
+  // State for validation errors
+  const [errors, setErrors] = useState({});
+
+  // Fetch repair details if editing
   useEffect(() => {
     if (id) {
-      fetchOwnerById(Number(id)) // Ensure the ID is converted to a number (long)
-        .then((response) => {
-          setOwner(response.data); // Populate the form with the fetched data
+      fetchRepairById(id).then((response) => {
+        const { type, description, properyItemId, address } = response.data;
+        setRepair({
+          type,
+          description,
+          propertyItemId: properyItemId,
+          address,
         });
+      });
     }
   }, [id]);
 
-  // Handle field changes
+  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setOwner({ ...owner, [name]: value });
+    setRepair({ ...repair, [name]: value });
+  };
+
+  // Validate form inputs
+  const validate = () => {
+    const newErrors = {};
+    if (!repair.type) newErrors.type = 'Type is required';
+    if (!repair.propertyItemId) newErrors.propertyItemId = 'Property Item ID is required';
+    if (!repair.address) newErrors.address = 'Address is required'; // Validate Address
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   // Handle form submission
   const handleSubmit = () => {
+    if (!validate()) return;
+
     const apiCall = id
-      ? updateOwner(Number(id), owner) // Use `updateOwner` for existing owner, ensure ID is treated as a number
-      : createOwner(owner); // Use `createOwner` for a new owner
-    apiCall.then(() => navigate('/owners')); // Redirect to owners list after submission
+      ? updateRepair(id, repair) // Update existing repair
+      : createRepair(repair);   // Create new repair
+
+    apiCall.then(() => navigate('/repairs')).catch((error) => {
+      console.error('Failed to save repair:', error);
+    });
   };
 
   return (
     <form>
       <TextField
-        label="VAT Number"
-        name="vatNumber"
-        value={owner.vatNumber}
+        label="Type"
+        name="type"
+        value={repair.type}
+        onChange={handleChange}
+        required
+        fullWidth
+        margin="normal"
+        error={!!errors.type}
+        helperText={errors.type}
+      />
+      <TextField
+        label="Description"
+        name="description"
+        value={repair.description}
         onChange={handleChange}
         fullWidth
         margin="normal"
       />
       <TextField
-        label="Name"
-        name="name"
-        value={owner.name}
+        label="Property Item ID"
+        name="propertyItemId"
+        value={repair.propertyItemId}
         onChange={handleChange}
         required
         fullWidth
         margin="normal"
-      />
-      <TextField
-        label="Surname"
-        name="surname"
-        value={owner.surname}
-        onChange={handleChange}
-        required
-        fullWidth
-        margin="normal"
+        error={!!errors.propertyItemId}
+        helperText={errors.propertyItemId}
       />
       <TextField
         label="Address"
         name="address"
-        value={owner.address}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-      />
-      <TextField
-        label="Phone Number"
-        name="phoneNumber"
-        value={owner.phoneNumber}
+        value={repair.address}
         onChange={handleChange}
         required
         fullWidth
         margin="normal"
+        error={!!errors.address}
+        helperText={errors.address}
       />
-      <TextField
-        label="Email"
-        name="email"
-        type="email"
-        value={owner.email}
-        onChange={handleChange}
-        required
-        fullWidth
-        margin="normal"
-      />
-      <TextField
-        label="Password"
-        name="password"
-        type="password"
-        value={owner.password}
-        onChange={handleChange}
-        required
-        fullWidth
-        margin="normal"
-      />
-      <TextField
-        select
-        label="Owner Type"
-        name="ownerType"
-        value={owner.ownerType}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-      >
-        <MenuItem value="Individual">Individual</MenuItem>
-        <MenuItem value="Company">Company</MenuItem>
-      </TextField>
 
       <Button
         variant="contained"
@@ -130,10 +113,10 @@ const OwnerForm = () => {
         fullWidth
         style={{ marginTop: '16px' }}
       >
-        {id ? 'Update Owner' : 'Create Owner'}
+        {id ? 'Update Repair' : 'Create Repair'}
       </Button>
     </form>
   );
 };
 
-export default OwnerForm;
+export default RepairForm;
