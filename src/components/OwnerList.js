@@ -1,7 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
-import { Link } from 'react-router-dom';
-import { fetchOwners, deleteOwner } from '../services/api'; // Import the API functions
+import React, { useEffect, useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Button,
+} from "@mui/material";
+import { Link } from "react-router-dom";
+import { fetchOwners, deleteOwner } from "../services/api"; // Import the API functions
 
 const OwnerList = () => {
   const [owners, setOwners] = useState([]);
@@ -12,13 +19,21 @@ const OwnerList = () => {
 
   const handleDelete = (id) => {
     deleteOwner(id).then(() => {
-      setOwners(owners.filter(owner => owner.id !== id)); // Remove the deleted owner from the list
+      setOwners(owners.filter((owner) => owner.id !== id)); // Remove the deleted owner from the list
     });
   };
 
   return (
     <>
-      <Button variant="contained" color="primary" component={Link} to="/owners/new">Add Owner</Button>
+      <Button
+        sx={{ mt: 5, mb: 2 }}
+        variant="contained"
+        color="primary"
+        component={Link}
+        to="/owners/new"
+      >
+        Add Owner
+      </Button>
       <Table>
         <TableHead>
           <TableRow>
@@ -29,14 +44,21 @@ const OwnerList = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {owners.map(owner => (
+          {owners.map((owner) => (
             <TableRow key={owner.id}>
               <TableCell>{owner.id}</TableCell>
               <TableCell>{owner.name}</TableCell>
               <TableCell>{owner.email}</TableCell>
               <TableCell>
-                <Button component={Link} to={`/owners/${owner.id}`}>Edit</Button>
-                <Button color="secondary" onClick={() => handleDelete(owner.id)}>Delete</Button>
+                <Button component={Link} to={`/owners/${owner.id}`}>
+                  Edit
+                </Button>
+                <Button
+                  color="secondary"
+                  onClick={() => handleDelete(owner.id)}
+                >
+                  Delete
+                </Button>
               </TableCell>
             </TableRow>
           ))}

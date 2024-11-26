@@ -1,7 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
-import { Link } from 'react-router-dom';
-import { fetchPropertyItems, deletePropertyItem } from '../services/api'; // Correct imports
+import React, { useEffect, useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Button,
+} from "@mui/material";
+import { Link } from "react-router-dom";
+import { fetchPropertyItems, deletePropertyItem } from "../services/api"; // Correct imports
 
 const PropertyItemList = () => {
   const [propertyItems, setPropertyItems] = useState([]);
@@ -12,31 +19,44 @@ const PropertyItemList = () => {
 
   const handleDelete = (id) => {
     deletePropertyItem(id).then(() => {
-      setPropertyItems(propertyItems.filter(item => item.id !== id)); // Remove deleted property item
+      setPropertyItems(propertyItems.filter((item) => item.id !== id)); // Remove deleted property item
     });
   };
 
   return (
     <>
-      <Button variant="contained" color="primary" component={Link} to="/property-items/new">Add Property Item</Button>
+      <Button
+        sx={{ mt: 5, mb: 2 }}
+        variant="contained"
+        color="primary"
+        component={Link}
+        to="/property-items/new"
+      >
+        Add Property Item
+      </Button>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>ID</TableCell>
-            <TableCell>Name</TableCell>
+            <TableCell>#</TableCell>
+            <TableCell>Address</TableCell>
             <TableCell>Owner Name</TableCell>
             <TableCell>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {propertyItems.map(item => (
+          {propertyItems.map((item, index) => (
             <TableRow key={item.id}>
-              <TableCell>{item.id}</TableCell>
-              <TableCell>{item.name}</TableCell>
+              {/* Display the row number starting from 1 */}
+              <TableCell>{index + 1}</TableCell>
+              <TableCell>{item.address}</TableCell>
               <TableCell>{item.ownerName}</TableCell>
               <TableCell>
-                <Button component={Link} to={`/property-items/${item.id}`}>Edit</Button>
-                <Button color="secondary" onClick={() => handleDelete(item.id)}>Delete</Button>
+                <Button component={Link} to={`/property-items/${item.id}`}>
+                  Edit
+                </Button>
+                <Button color="secondary" onClick={() => handleDelete(item.id)}>
+                  Delete
+                </Button>
               </TableCell>
             </TableRow>
           ))}

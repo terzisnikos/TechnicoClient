@@ -1,7 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
-import { Link } from 'react-router-dom';
-import { fetchRepairs, deleteRepair } from '../services/api'; // API functions for repairs
+import React, { useEffect, useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Button,
+} from "@mui/material";
+import { Link } from "react-router-dom";
+import { fetchRepairs, deleteRepair } from "../services/api"; // API functions for repairs
 
 const RepairList = () => {
   const [repairs, setRepairs] = useState([]);
@@ -21,11 +28,12 @@ const RepairList = () => {
   return (
     <>
       <Button
+        sx={{ mt: 5, mb: 2 }}
         variant="contained"
         color="primary"
         component={Link}
         to="/repairs/new"
-        style={{ marginBottom: '16px' }}
+        style={{ marginBottom: "16px" }}
       >
         Add Repair
       </Button>
@@ -47,10 +55,17 @@ const RepairList = () => {
               <TableCell>{repair.description}</TableCell>
               <TableCell>{repair.propertyItemId}</TableCell>
               <TableCell>
-                <Button component={Link} to={`/repairs/${repair.id}`} color="primary">
+                <Button
+                  component={Link}
+                  to={`/repairs/${repair.id}`}
+                  color="primary"
+                >
                   Edit
                 </Button>
-                <Button color="secondary" onClick={() => handleDelete(repair.id)}>
+                <Button
+                  color="secondary"
+                  onClick={() => handleDelete(repair.id)}
+                >
                   Delete
                 </Button>
               </TableCell>

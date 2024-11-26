@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { TextField, Button } from '@mui/material';
-import { useParams, useNavigate } from 'react-router-dom';
-import { fetchRepairById, createRepair, updateRepair } from '../services/api';
+import React, { useState, useEffect } from "react";
+import { TextField, Button } from "@mui/material";
+import { useParams, useNavigate } from "react-router-dom";
+import { fetchRepairById, createRepair, updateRepair } from "../services/api";
 
 const RepairForm = () => {
   const { id } = useParams(); // Get the repair ID from the URL
@@ -9,10 +9,10 @@ const RepairForm = () => {
 
   // State to manage form data
   const [repair, setRepair] = useState({
-    type: '',
-    description: '',
-    propertyItemId: '',
-    address: '', // Include Address field
+    type: "",
+    description: "",
+    propertyItemId: "",
+    address: "", // Include Address field
   });
 
   // State for validation errors
@@ -22,11 +22,11 @@ const RepairForm = () => {
   useEffect(() => {
     if (id) {
       fetchRepairById(id).then((response) => {
-        const { type, description, properyItemId, address } = response.data;
+        const { type, description, PropertyItemId, address } = response.data;
         setRepair({
           type,
           description,
-          propertyItemId: properyItemId,
+          propertyItemId: PropertyItemId,
           address,
         });
       });
@@ -42,9 +42,10 @@ const RepairForm = () => {
   // Validate form inputs
   const validate = () => {
     const newErrors = {};
-    if (!repair.type) newErrors.type = 'Type is required';
-    if (!repair.propertyItemId) newErrors.propertyItemId = 'Property Item ID is required';
-    if (!repair.address) newErrors.address = 'Address is required'; // Validate Address
+    if (!repair.type) newErrors.type = "Type is required";
+    if (!repair.propertyItemId)
+      newErrors.propertyItemId = "Property Item ID is required";
+    if (!repair.address) newErrors.address = "Address is required"; // Validate Address
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -55,11 +56,13 @@ const RepairForm = () => {
 
     const apiCall = id
       ? updateRepair(id, repair) // Update existing repair
-      : createRepair(repair);   // Create new repair
+      : createRepair(repair); // Create new repair
 
-    apiCall.then(() => navigate('/repairs')).catch((error) => {
-      console.error('Failed to save repair:', error);
-    });
+    apiCall
+      .then(() => navigate("/repairs"))
+      .catch((error) => {
+        console.error("Failed to save repair:", error);
+      });
   };
 
   return (
@@ -111,9 +114,9 @@ const RepairForm = () => {
         color="primary"
         onClick={handleSubmit}
         fullWidth
-        style={{ marginTop: '16px' }}
+        style={{ marginTop: "16px" }}
       >
-        {id ? 'Update Repair' : 'Create Repair'}
+        {id ? "Update Repair" : "Create Repair"}
       </Button>
     </form>
   );
