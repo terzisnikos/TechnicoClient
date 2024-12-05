@@ -21,6 +21,8 @@ export const createPropertyItem = (data) => api.post("/api/ProperyItems", data);
 export const updatePropertyItem = (id, data) =>
   api.put(`/api/ProperyItems/${id}`, data);
 export const deletePropertyItem = (id) => api.delete(`/api/ProperyItems/${id}`);
+export const fetchPropertyItemsByOwnerId = (id) =>
+  api.get(`/api/ProperyItems/owner/${id}`);
 
 // CRUD Functions for Repairs
 export const fetchRepairs = () => api.get("/api/Repair");
@@ -28,6 +30,8 @@ export const fetchRepairById = (id) => api.get(`/api/Repair/${id}`);
 export const createRepair = (data) => api.post("/api/Repair", data);
 export const updateRepair = (id, data) => api.put(`/api/Repair/${id}`, data);
 export const deleteRepair = (id) => api.delete(`/api/Repair/${id}`);
+export const fetchRepairsByPropertyItemId = (id) =>
+  api.get(`/api/Repair/propertyItem/${id}`);
 
 console.log(api);
 export default api;

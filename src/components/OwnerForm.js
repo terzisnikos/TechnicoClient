@@ -1,25 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { TextField, Button, MenuItem } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom"; // Ensure useParams is imported correctly
-import { createOwner, updateOwner, fetchOwnerById } from "../services/api"; // API functions
+import { useNavigate, useParams } from "react-router-dom";
+import { createOwner, updateOwner, fetchOwnerById } from "../services/api";
+import uuid from "react-uuid";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const OwnerForm = ({ isEditing }) => {
   const navigate = useNavigate();
-  const { id } = useParams(); // Move useParams to the top level of the component
+  const { id } = useParams();
 
-  // State for owner form data
   const [owner, setOwner] = useState({
     name: "",
     surname: "",
-    vatNumber: "",
+    VATNumber: "",
     address: "",
     phoneNumber: "",
     email: "",
-    password: "",
-    ownerType: "user", // Default value
+    password: "password",
+    ownerType: "user",
   });
 
-  // State for validation errors
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -29,7 +30,7 @@ const OwnerForm = ({ isEditing }) => {
           const {
             name,
             surname,
-            vatNumber,
+            VATNumber,
             address,
             phoneNumber,
             email,
@@ -39,7 +40,7 @@ const OwnerForm = ({ isEditing }) => {
           setOwner({
             name,
             surname,
-            vatNumber,
+            VATNumber,
             address,
             phoneNumber,
             email,
@@ -49,17 +50,16 @@ const OwnerForm = ({ isEditing }) => {
         })
         .catch((error) => {
           console.error("Failed to fetch owner by ID:", error);
+          toast.error("Failed to fetch owner details.");
         });
     }
-  }, [isEditing, id]); // Dependency array includes `isEditing` and `id`
+  }, [isEditing, id]);
 
-  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setOwner({ ...owner, [name]: value });
   };
 
-  // Validate form inputs
   const validate = () => {
     const newErrors = {};
     if (!owner.name) newErrors.name = "Name is required";
@@ -67,25 +67,38 @@ const OwnerForm = ({ isEditing }) => {
     if (!owner.phoneNumber) newErrors.phoneNumber = "Phone number is required";
     if (!owner.email) newErrors.email = "Email is required";
     if (!owner.password && !isEditing)
-      newErrors.password = "Password is required"; // Password is not mandatory when editing
+      newErrors.password = "Password is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle form submission
   const handleSubmit = () => {
     if (!validate()) return;
 
-    const action = isEditing
-      ? updateOwner(id, owner) // Update owner if editing
-      : createOwner(owner); // Create owner if not editing
+    if (isEditing) {
+      owner.id = id;
+    }
+    console.log("isEditing", isEditing);
+    console.log("ID", owner.id);
+    console.log("Owner", owner);
+    owner.ownerType = 0;
+
+    const action = isEditing ? updateOwner(id, owner) : createOwner(owner);
 
     action
-      .then(() => navigate("/owners")) // Redirect after successful action
+      .then(() => {
+        toast.success(
+          isEditing
+            ? "Owner updated successfully!"
+            : "Owner created successfully!"
+        );
+        setTimeout(() => navigate("/owners"), 0);
+      })
       .catch((error) => {
         console.error("Failed to save owner:", error);
+        toast.error("Failed to save owner. Please try again.");
         if (error.response && error.response.data.errors) {
-          setErrors(error.response.data.errors); // Handle backend validation errors
+          setErrors(error.response.data.errors);
         }
       });
   };
@@ -117,16 +130,8 @@ const OwnerForm = ({ isEditing }) => {
       />
       <TextField
         label="VAT Number"
-        name="vatNumber"
-        value={owner.vatNumber}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-      />
-      <TextField
-        label="Address"
-        name="address"
-        value={owner.address}
+        name="VATNumber"
+        value={owner.VATNumber}
         onChange={handleChange}
         fullWidth
         margin="normal"
@@ -187,6 +192,9 @@ const OwnerForm = ({ isEditing }) => {
       >
         {isEditing ? "Update Owner" : "Create Owner"}
       </Button>
+
+      {/* ToastContainer for displaying toast messages */}
+      <ToastContainer />
     </form>
   );
 };

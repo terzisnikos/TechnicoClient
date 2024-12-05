@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { TextField, Button } from "@mui/material";
+import {
+  TextField,
+  Button,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  InputAdornment,
+  IconButton,
+} from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchRepairById, createRepair, updateRepair } from "../services/api";
+import axios from "axios";
 
-const RepairForm = () => {
+const RepairForm = ({ isEditing }) => {
   const { id } = useParams(); // Get the repair ID from the URL
   const navigate = useNavigate();
 
@@ -12,31 +22,65 @@ const RepairForm = () => {
     type: "",
     description: "",
     propertyItemId: "",
-    address: "", // Include Address field
+    address: "",
+    cost: 0,
+    scheduledDate: null,
+    status: "Pending",
   });
+
+  // State to store Property Items
+  const [propertyItems, setPropertyItems] = useState([]);
 
   // State for validation errors
   const [errors, setErrors] = useState({});
 
   // Fetch repair details if editing
   useEffect(() => {
-    if (id) {
+    if (id && isEditing) {
       fetchRepairById(id).then((response) => {
-        const { type, description, PropertyItemId, address } = response.data;
+        const {
+          type,
+          description,
+          propertyItemId,
+          address,
+          cost,
+          scheduledDate,
+          status,
+        } = response.data;
         setRepair({
           type,
           description,
-          propertyItemId: PropertyItemId,
+          propertyItemId,
           address,
+          cost,
+          scheduledDate,
+          status,
         });
       });
     }
-  }, [id]);
+  }, [id, isEditing]);
+
+  // Fetch Property Items for the Select dropdown
+  useEffect(() => {
+    axios
+      .get("https://localhost:7004/api/ProperyItems") // Fetch property items
+      .then((response) => {
+        setPropertyItems(response.data); // Update state with property items
+      })
+      .catch((error) => {
+        console.error("Failed to fetch property items:", error);
+      });
+  }, []);
 
   // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setRepair({ ...repair, [name]: value });
+  };
+
+  // Handle scheduled date change
+  const handleDateChange = (date) => {
+    setRepair({ ...repair, scheduledDate: date });
   };
 
   // Validate form inputs
@@ -45,7 +89,10 @@ const RepairForm = () => {
     if (!repair.type) newErrors.type = "Type is required";
     if (!repair.propertyItemId)
       newErrors.propertyItemId = "Property Item ID is required";
-    if (!repair.address) newErrors.address = "Address is required"; // Validate Address
+    if (!repair.address) newErrors.address = "Address is required";
+    if (!repair.cost || repair.cost <= 0)
+      newErrors.cost = "Cost must be a positive value";
+    if (!repair.status) newErrors.status = "Status is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -54,9 +101,10 @@ const RepairForm = () => {
   const handleSubmit = () => {
     if (!validate()) return;
 
-    const apiCall = id
-      ? updateRepair(id, repair) // Update existing repair
-      : createRepair(repair); // Create new repair
+    const apiCall =
+      id && isEditing
+        ? updateRepair(id, repair) // Update existing repair
+        : createRepair(repair); // Create new repair
 
     apiCall
       .then(() => navigate("/repairs"))
@@ -78,25 +126,31 @@ const RepairForm = () => {
         error={!!errors.type}
         helperText={errors.type}
       />
-      <TextField
-        label="Description"
-        name="description"
-        value={repair.description}
-        onChange={handleChange}
+
+      <FormControl
         fullWidth
         margin="normal"
-      />
-      <TextField
-        label="Property Item ID"
-        name="propertyItemId"
-        value={repair.propertyItemId}
-        onChange={handleChange}
         required
-        fullWidth
-        margin="normal"
         error={!!errors.propertyItemId}
-        helperText={errors.propertyItemId}
-      />
+      >
+        <InputLabel id="property-item-select-label">Property Item</InputLabel>
+        <Select
+          labelId="property-item-select-label"
+          name="propertyItemId"
+          value={repair.propertyItemId}
+          onChange={handleChange}
+        >
+          {propertyItems.map((item) => (
+            <MenuItem key={item.id} value={item.id}>
+              {item.name}
+            </MenuItem>
+          ))}
+        </Select>
+        {errors.propertyItemId && (
+          <div style={{ color: "red" }}>{errors.propertyItemId}</div>
+        )}
+      </FormControl>
+
       <TextField
         label="Address"
         name="address"
@@ -109,6 +163,50 @@ const RepairForm = () => {
         helperText={errors.address}
       />
 
+      <TextField
+        label="Cost"
+        name="cost"
+        type="number"
+        value={repair.cost}
+        onChange={handleChange}
+        required
+        fullWidth
+        margin="normal"
+        error={!!errors.cost}
+        helperText={errors.cost}
+        InputProps={{
+          startAdornment: <InputAdornment position="start">$</InputAdornment>,
+        }}
+      />
+
+      <TextField
+        label="Scheduled Date"
+        name="scheduledDate"
+        type="datetime-local"
+        value={repair.scheduledDate ? repair.scheduledDate : ""}
+        onChange={handleChange}
+        fullWidth
+        margin="normal"
+        InputLabelProps={{
+          shrink: true,
+        }}
+      />
+
+      <FormControl fullWidth margin="normal" required error={!!errors.status}>
+        <InputLabel id="status-select-label">Status</InputLabel>
+        <Select
+          labelId="status-select-label"
+          name="status"
+          value={repair.status}
+          onChange={handleChange}
+        >
+          <MenuItem value="Pending">Pending</MenuItem>
+          <MenuItem value="In Progress">In Progress</MenuItem>
+          <MenuItem value="Completed">Completed</MenuItem>
+        </Select>
+        {errors.status && <div style={{ color: "red" }}>{errors.status}</div>}
+      </FormControl>
+
       <Button
         variant="contained"
         color="primary"
@@ -116,7 +214,7 @@ const RepairForm = () => {
         fullWidth
         style={{ marginTop: "16px" }}
       >
-        {id ? "Update Repair" : "Create Repair"}
+        {isEditing ? "Update Repair" : "Create Repair"}
       </Button>
     </form>
   );

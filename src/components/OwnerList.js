@@ -6,25 +6,43 @@ import {
   TableHead,
   TableRow,
   Button,
+  TextField,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import { fetchOwners, deleteOwner } from "../services/api"; // Import the API functions
+import { ToastContainer, toast } from "react-toastify"; // Import Toastify
+import "react-toastify/dist/ReactToastify.css"; // Import Toastify CSS
 
 const OwnerList = () => {
   const [owners, setOwners] = useState([]);
+  const [filter, setFilter] = useState(""); // State for filtering vatNumber
 
   useEffect(() => {
-    fetchOwners().then((response) => setOwners(response.data)); // Use fetchOwners to get data
+    fetchOwners()
+      .then((response) => setOwners(response.data))
+      .catch((error) => toast.error("Failed to fetch owners!"));
   }, []);
 
-  const handleDelete = (id) => {
-    deleteOwner(id).then(() => {
+  const handleDelete = async (id) => {
+    try {
+      await deleteOwner(id);
       setOwners(owners.filter((owner) => owner.id !== id)); // Remove the deleted owner from the list
-    });
+      toast.success("Owner deleted successfully!");
+    } catch (error) {
+      toast.error(
+        "Failed to delete owner. Please try to delete the depended Properties first."
+      );
+    }
   };
+
+  const filteredOwners = owners.filter(
+    (owner) =>
+      !filter || owner.vatNumber?.toLowerCase().includes(filter.toLowerCase())
+  );
 
   return (
     <>
+      <ToastContainer /> {/* Add Toastify container */}
       <Button
         sx={{ mt: 5, mb: 2 }}
         variant="contained"
@@ -34,21 +52,33 @@ const OwnerList = () => {
       >
         Add Owner
       </Button>
+      {/* vatNumber Filter */}
+      <TextField
+        sx={{ mb: 5, mt: 5, ml: 5 }}
+        label="Filter by VAT Number"
+        variant="outlined"
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+      />
       <Table>
         <TableHead>
           <TableRow>
             <TableCell>ID</TableCell>
             <TableCell>Name</TableCell>
+            <TableCell>Surname</TableCell>
             <TableCell>Email</TableCell>
+            <TableCell>vatNumber</TableCell>
             <TableCell>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {owners.map((owner) => (
+          {filteredOwners.map((owner) => (
             <TableRow key={owner.id}>
               <TableCell>{owner.id}</TableCell>
               <TableCell>{owner.name}</TableCell>
+              <TableCell>{owner.surname}</TableCell>
               <TableCell>{owner.email}</TableCell>
+              <TableCell>{owner.vatNumber}</TableCell>
               <TableCell>
                 <Button component={Link} to={`/owners/${owner.id}`}>
                   Edit
